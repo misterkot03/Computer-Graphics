@@ -1,8 +1,8 @@
 #include <windows.h>
 #include <gl/gl.h>
-#include "../Lab_1/stb-master/Menu.h"
+#include "../LAB_2/stb-master/Menu.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../Lab_1/stb-master/stb_image.h"
+#include "C:/Computer-Graphics/LAB_2/stb-master/stb_image.h"
 
 int sprite1ButtonPressed = 0;
 int sprite2ButtonPressed = 0;
@@ -147,11 +147,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
             float spriteHeight = 80.0f; // высота текстуры
 
 
-                        //glEnable(GL_BLEND);
-                        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-                        // Отображение текстуры Sprite_1, если соответствующая кнопка нажата
+
+
                     if (sprite1ButtonPressed)
                     {
                         float sprite1PosX = centerX - (spriteWidth / 2);
@@ -161,6 +160,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
                         glEnable(GL_TEXTURE_2D);
                         glBindTexture(GL_TEXTURE_2D, textureSprite1);
+                        glColor3f(1,1,1);
+                        glPushMatrix();
                         glBegin(GL_QUADS);
                         glTexCoord2f(0.0f, 0.0f); glVertex2f(sprite1PosX, sprite1PosY);
                         glTexCoord2f(1.0f, 0.0f); glVertex2f(sprite1PosX + spriteWidth, sprite1PosY);
@@ -168,17 +169,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
                         glTexCoord2f(0.0f, 1.0f); glVertex2f(sprite1PosX, sprite1PosY + spriteHeight);
                         glEnd();
                         glDisable(GL_TEXTURE_2D);
+                        glPopMatrix();
                     }
 
                     // Аналогично для Sprite_2
                     if (sprite2ButtonPressed)
                     {
                         float sprite2PosX = centerX - (spriteWidth / 2);
-                        float sprite2PosY = posY + spriteHeight + 10.0f; // Дополнительный отступ для второй текстуры
+                        float sprite2PosY = posY + spriteHeight + 10.0f;
 
-
-
-
+                        glColor3f(1,1,1);
+                        glPushMatrix();
                         glEnable(GL_TEXTURE_2D);
                         glBindTexture(GL_TEXTURE_2D, textureSprite2);
                         glBegin(GL_QUADS);
@@ -188,9 +189,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
                         glTexCoord2f(0.0f, 1.0f); glVertex2f(sprite2PosX, sprite2PosY + spriteHeight);
                         glEnd();
                         glDisable(GL_TEXTURE_2D);
+                         glPopMatrix();
                     }
-
-                    //glDisable(GL_BLEND);
 
 
 
@@ -228,13 +228,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONDOWN:
 {
                 int buttonId = Menu_MouseDown();
-                if (buttonId == 0) // ID кнопки Sprite_1
+                if (buttonId == 0)
                 {
                     sprite1ButtonPressed = 1;
                     sprite2ButtonPressed = 0;
                     printf("Button Sprite_1 pressed. State: %d\n", sprite1ButtonPressed);
                 }
-                else if (buttonId == 1) // ID кнопки Sprite_2
+                else if (buttonId == 1)
                 {
                     sprite1ButtonPressed = 0;
                     sprite2ButtonPressed = 1;

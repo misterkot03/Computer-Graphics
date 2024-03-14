@@ -35,3 +35,35 @@
 	<intrin.h>
 	<arm_neon.h>
 
+1710404835 source:c:\computer-graphics\lab_2\stb-master\menu.c
+	<gl/gl.h>
+	<stdio.h>
+	<stdlib.h>
+	"C:\Users\zhilk\OneDrive\Рабочий стол\2 lab\project\stb_easy_font.h"
+	"Menu.h"
+
+1710404563 c:\computer-graphics\lab_2\stb-master\menu.h
+
+1710427784 source:c:\computer-graphics\lab_2\main.c
+	<windows.h>
+	<gl/gl.h>
+	"../LAB_2/stb-master/Menu.h"
+	"C:/Computer-Graphics/LAB_2/stb-master/stb_image.h"
+
+1674029753 c:\computer-graphics\lab_2\stb-master\stb_image.h
+	"stb_image.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<assert.h>
+	<stdint.h>
+	<emmintrin.h>
+	<intrin.h>
+	<arm_neon.h>
+
