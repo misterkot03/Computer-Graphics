@@ -1,7 +1,7 @@
 #include <gl/gl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "C:\Users\zhilk\OneDrive\Рабочий стол\2 lab\project\stb_easy_font.h"
+#include "C:\Users\zhilk\Desktop\Computer-Graphics\LAB_3\stb-master\stb_easy_font.h"
 #include "Menu.h"
 #define nameLen 20
 typedef struct {

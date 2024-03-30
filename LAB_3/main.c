@@ -3,12 +3,31 @@
 #include "../LAB_3/stb-master/Menu.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../LAB_3/stb-master/stb_image.h"
-// цкнаюкэмше оепелеммше
+#define bool int
+#define true 1
+#define false 0
+// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 int sprite1ButtonPressed = 0;
 int sprite2ButtonPressed = 0;
-int currentFrame = 0;          // рЕЙСЫХИ ЙЮДП ЮМХЛЮЖХХ
-const int totalFrames = 8;     // бЯЕЦН ЙЮДПНБ Б ЯОПЮИР-КХЯРЕ
-float frameWidth = 1.0f / 8.0f;  // ьХПХМЮ НДМНЦН ЙЮДПЮ Б РЕЙЯРСПМШУ ЙННПДХМЮРЮУ
+int currentFrame = 0;          // Текущий кадр анимации
+const int totalFrames = 8;     // Всего кадров в спрайт-листе
+float frameWidth = 1.0f / 8.0f;  // Ширина одного кадра в текстурных координатах
+int isMoving = 0;
+float jumpSpeed = 50.0f; // Начальная скорость прыжка
+float gravity = -5.0f; // Ускорение, действующее на персонажа при падении
+float verticalVelocity = 0.0f; // Вертикальная скорость персонажа
+bool isJumping = false; // Находится ли персонаж в прыжке
+float groundLevel = 0.0f; // Уровень "земли", ниже которого персонаж не может опуститься
+bool isAirborne = false;  // Переменная для проверки, находится ли персонаж в воздухе
+
+
+
+typedef struct {
+    float x, y;    // Позиция
+    float dx, dy;  // Скорость
+} Hero;
+
+Hero hero = {0.0f, 0.0f, 0.0f, 0.0f};
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
@@ -39,20 +58,22 @@ GLuint LoadTexture(const char *filename)
 
 
 
-GLuint textureSprite1, textureSprite2, textureBackground;
+GLuint textureSprite1, textureSprite2, textureSprite3, textureBackground;
 
-// тСМЙЖХЪ ДКЪ НАМНБКЕМХЪ РЕЙСЫЕЦН ЙЮДПЮ
+// Функция для обновления текущего кадра
 void UpdateAnimationFrame() {
-    currentFrame = (currentFrame + 1) % totalFrames; // оЕПЕУНД Й ЯКЕДСЧЫЕЛС ЙЮДПС
+
+        currentFrame = (currentFrame + 1) % totalFrames; // Переход к следующему кадру
+
 }
 
-// тСМЙЖХЪ ПЕМДЕПХМЦЮ ЮМХЛЮЖХХ
+// Функция рендеринга анимации
 void RenderSpriteAnimation(GLuint texture, float posX, float posY, float width, float height, float scale) {
-    float frameWidth = 1.0f / 8; // оПЕДОНКЮЦЮЕРЯЪ, ВРН numFrames - ЩРН ЙНКХВЕЯРБН ЙЮДПНБ Б ЯОПЮИР-КХЯРЕ
+    float frameWidth = 1.0f / 8;
     float texLeft = currentFrame * frameWidth;
     float texRight = texLeft + frameWidth;
 
-    // пЮЯЯВХРШБЮЕЛ ПЮГЛЕПШ ЯОПЮИРЮ Я СВЕРНЛ ЛЮЯЬРЮАЮ
+    // Рассчитываем размеры спрайта с учетом масштаба
     float scaledWidth = width * scale;
     float scaledHeight = height * scale;
 
@@ -61,16 +82,16 @@ void RenderSpriteAnimation(GLuint texture, float posX, float posY, float width, 
 
     glColor3f(1,1,1);
     glBegin(GL_QUADS);
-        glTexCoord2f(texLeft, 0.0f); glVertex2f(posX, posY);                               // кЕБШИ БЕПУМХИ СЦНК
-        glTexCoord2f(texRight, 0.0f); glVertex2f(posX + scaledWidth, posY);                 // оПЮБШИ БЕПУМХИ СЦНК
-        glTexCoord2f(texRight, 1.0f); glVertex2f(posX + scaledWidth, posY + scaledHeight);  // оПЮБШИ МХФМХИ СЦНК
-        glTexCoord2f(texLeft, 1.0f); glVertex2f(posX, posY + scaledHeight);                 // кЕБШИ МХФМХИ СЦНК
+        glTexCoord2f(texLeft, 0.0f); glVertex2f(posX, posY);                               // Левый верхний угол
+        glTexCoord2f(texRight, 0.0f); glVertex2f(posX + scaledWidth, posY);                 // Правый верхний угол
+        glTexCoord2f(texRight, 1.0f); glVertex2f(posX + scaledWidth, posY + scaledHeight);  // Правый нижний угол
+        glTexCoord2f(texLeft, 1.0f); glVertex2f(posX, posY + scaledHeight);                 // Левый нижний угол
     glEnd();
 
     glDisable(GL_TEXTURE_2D);
 }
 
-void Init()
+void Init(HWND hwnd)
 {
     Menu_AddButton("sprite_1",10,10,100,30,2);
     Menu_AddButton("sprite_2",10,50,100,30,2);
@@ -78,7 +99,15 @@ void Init()
 
      textureSprite1 = LoadTexture("sprite1.png");
      textureSprite2 = LoadTexture("sprite2.png");
+     textureSprite3 = LoadTexture("IDLE.png");
      textureBackground = LoadTexture("background.png");
+     RECT rct;
+     GetClientRect(hwnd, &rct);
+     groundLevel = rct.bottom - 250;
+
+     // Инициализация позиции героя
+     hero.x = 0.0f;  // Начальная позиция по X
+     hero.y = groundLevel;  // Начальная позиция по Y
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,
@@ -130,7 +159,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
-    RECT rct; //ЯНГДЮМХЕ ОЕПЕЛЕММНИ Я ЙННПДХМЮРЮЛХ ОПЪЛНСЦНКМХЙЮ
+    RECT rct; //создание переменной с координатами прямоуголника
 
 
     glMatrixMode(GL_PROJECTION);
@@ -141,7 +170,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glLoadIdentity();
 
 
-    Init();
+    Init(hwnd);
     /* program main loop */
     while (!bQuit)
     {
@@ -163,21 +192,21 @@ int WINAPI WinMain(HINSTANCE hInstance,
         {
             /* OpenGL animation code goes here */
 
-            UpdateAnimationFrame();
+
 
 
             glClearColor(0.5f, 0.2f, 0.1f, 0.7f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glPushMatrix();
 
-            Menu_ShowMenu();
+
+            //Menu_ShowMenu();
 
 
             float centerX = rct.right / 2.0f;
             float posY = 150.0f;
-            float spriteWidth = 800.0f; // ЬХПХМЮ РЕЙЯРСПШ
-            float spriteHeight = 80.0f; // БШЯНРЮ РЕЙЯРСПШ
+            float spriteWidth = 800.0f; // ширина текстуры
+            float spriteHeight = 80.0f; // высота текстуры
 
 
                     glEnable(GL_BLEND);
@@ -185,9 +214,58 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 
 
+                    float spriteAspectRatio = (float)80 / (float)80;
+                    float renderedSpriteWidth = spriteHeight * spriteAspectRatio;
 
 
 
+
+
+
+                    if(!isAirborne && !isMoving ){
+                            glPushMatrix();
+
+                            UpdateAnimationFrame();
+
+                    RenderSpriteAnimation(textureSprite3, hero.x, hero.y, renderedSpriteWidth, spriteHeight, 3.0f);
+                    glPopMatrix();
+                    }
+                    if (isMoving) {
+                            glPushMatrix();
+
+
+                    UpdateAnimationFrame();
+                    hero.x += hero.dx;
+                    hero.y += hero.dy;
+                     if (hero.x < 0) hero.x = 0;
+                    if (hero.x > rct.right - spriteWidth) hero.x = rct.right - spriteWidth;
+                    RenderSpriteAnimation(textureSprite1, hero.x, hero.y, renderedSpriteWidth, spriteHeight, 3.0f);
+                    glPopMatrix();
+
+                    } if (isAirborne) {
+                        glPushMatrix();
+                        UpdateAnimationFrame();
+                       RenderSpriteAnimation(textureSprite2, hero.x, hero.y, renderedSpriteWidth, spriteHeight, 3.0f);
+
+                        hero.y -= verticalVelocity; // Вычитаем, потому что движемся вверх
+                        verticalVelocity += gravity; // Добавляем гравитацию, которая отрицательна
+
+                        if (hero.y >= groundLevel) {
+                            hero.y = groundLevel;
+                            isAirborne = false;
+                            verticalVelocity = 0;
+
+                        }
+                        glPopMatrix();
+
+
+                    }
+
+
+
+
+
+/*
                     if (sprite1ButtonPressed)
                     {
                         float sprite1PosX = centerX - (spriteWidth / 2);
@@ -198,7 +276,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
                         RenderSpriteAnimation(textureSprite1,sprite1PosX,sprite1PosY, 640.0f / 8.0f, 80.0f, 8.0f);
                     }
 
-                    // юМЮКНЦХВМН ДКЪ Sprite_2
+                    // Аналогично для Sprite_2
                     if (sprite2ButtonPressed)
                     {
                         float sprite2PosX = centerX - (spriteWidth / 2);
@@ -206,12 +284,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
                         RenderSpriteAnimation(textureSprite2, sprite2PosX,sprite2PosY, 640.0f / 8.0f, 80.0f, 8.0f);
                     }
-
+*/
             glDisable(GL_BLEND);
 
 
 
-            glPopMatrix();
+
 
             SwapBuffers(hDC);
 
@@ -271,15 +349,40 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             return 0;
 
         case WM_KEYDOWN:
-        {
-            switch (wParam)
-            {
-                case VK_ESCAPE:
-                    PostQuitMessage(0);
-                break;
-            }
-        }
-        break;
+
+    switch(wParam) {
+        case VK_LEFT:  // Если нажата стрелка влево
+            hero.dx = -15.0f;
+            isMoving = 1;
+            break;
+        case VK_RIGHT: // Если нажата стрелка вправо
+            hero.dx = 15.0f;
+            isMoving = 1;
+            break;
+        case VK_UP: // Клавиша вверх
+              if (!isAirborne) {
+                    isAirborne = true;
+        verticalVelocity = jumpSpeed; // Прыжок
+
+    }
+            break;
+         case VK_SPACE: // Клавиша пробел
+
+                    isAirborne = true;
+        verticalVelocity = jumpSpeed; // Прыжок
+
+
+            break;
+
+    }
+    break;
+
+    case WM_KEYUP:
+    if (wParam == VK_LEFT || wParam == VK_RIGHT) {
+        hero.dx = 0.0f;
+        isMoving = 0; // Обновляем, указывая, что герой больше не движется.
+    }
+    break;
 
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
