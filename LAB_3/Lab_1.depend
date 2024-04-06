@@ -67,7 +67,7 @@
 	<intrin.h>
 	<arm_neon.h>
 
-1711774489 source:c:\users\zhilk\desktop\computer-graphics\lab_3\main.c
+1711780749 source:c:\users\zhilk\desktop\computer-graphics\lab_3\main.c
 	<windows.h>
 	<gl/gl.h>
 	"../LAB_3/stb-master/Menu.h"
@@ -104,4 +104,15 @@
 1711121174 c:\users\zhilk\desktop\computer-graphics\lab_3\stb-master\stb_easy_font.h
 	<stdlib.h>
 	<math.h>
+
+1711783968 source:c:\users\zhilk\desktop\computer-graphics\lab_3\c\graphics.c
+	"../headers/graphics.h"
+	"../headers/graphics.h"
+
+1711783930 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\graphics.h
+	<gl/gl.h>
+	"tile.h"
+
+1711782882 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\tile.h
+	"graphics.h"
 

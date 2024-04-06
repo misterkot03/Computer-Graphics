@@ -37,17 +37,49 @@
 			<Add library="glu32" />
 			<Add library="gdi32" />
 		</Linker>
+		<Unit filename="c/graphics.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="c/hero.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="c/level.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="c/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="headers/Level.h" />
+		<Unit filename="headers/Menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="headers/Menu.h" />
+		<Unit filename="headers/graphics.h" />
+		<Unit filename="headers/hero.h" />
+		<Unit filename="headers/stb_easy_font.h" />
+		<Unit filename="headers/stb_image.h" />
+		<Unit filename="headers/tile.h" />
+		<Unit filename="hero.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="level.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="stb-master/Level.h" />
 		<Unit filename="stb-master/Menu.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="stb-master/Menu.h" />
+		<Unit filename="stb-master/graphics.h" />
+		<Unit filename="stb-master/hero.h" />
 		<Unit filename="stb-master/stb_easy_font.h" />
 		<Unit filename="stb-master/stb_image.h" />
 		<Unit filename="stb-master/stdio.h" />
 		<Unit filename="stb-master/stdlib.h" />
+		<Unit filename="stb-master/tile.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
