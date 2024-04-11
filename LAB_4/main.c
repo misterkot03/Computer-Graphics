@@ -73,6 +73,7 @@ typedef struct {
     bool isMoving;       // Двигается ли
     float width, height; // Размеры героя
     bool jumpPeakReached;// Достигнут ли пик прыжка
+    bool facingLeft;     // Смотрит ли влево
 } Hero;
 Hero hero = { .x = 0.0f, .y = 0.0f, .dx = 0.0f, .dy = 0.0f, .isAirborne = true, .isMoving = false, .width = 80.0f, .height = 80.0f };
 //КОЛИЗИЯ
@@ -183,9 +184,16 @@ void UpdateAnimationFrame() {
 
 // Функция рендеринга анимации
 void RenderSpriteAnimation(GLuint texture, float posX, float posY, float width, float height, float scale, int currentFrame) {
-    float frameWidth = 1.0f / 8;
+     float frameWidth = 1.0f / 8.0f;
     float texLeft = currentFrame * frameWidth;
     float texRight = texLeft + frameWidth;
+
+    // Отражаем спрайт по горизонтали, если герой смотрит влево
+    if (hero.facingLeft) {
+        float temp = texLeft;
+        texLeft = texRight;
+        texRight = temp;
+    }
 
     // Рассчитываем размеры спрайта с учетом масштаба
     float scaledWidth = width * scale;
@@ -342,6 +350,7 @@ void Init(HWND hwnd)
      RECT rct;
      GetClientRect(hwnd, &rct);
      groundLevel = rct.bottom - 80;
+     hero.facingLeft = false;
 
      hero.dy = 0.0f;
 
@@ -635,9 +644,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case VK_LEFT: // Если нажата стрелка влево
             hero.dx = -15.0f; // Устанавливаем скорость движения влево
             isMoving = true;
+            hero.facingLeft = true; // Герой смотрит влево
             break;
         case VK_RIGHT: // Если нажата стрелка вправо
             hero.dx = 15.0f; // Устанавливаем скорость движения вправо
+            hero.facingLeft = false; // Герой смотрит вправо
             isMoving = true;
             break;
         case VK_UP: // Клавиша вверх
