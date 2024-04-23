@@ -181,6 +181,20 @@ void UpdateAnimationFrame() {
         currentFrame = (currentFrame + 1) % totalFrames; // Переход к следующему кадру
 
 }
+void DrawCollisionBox(Hero *hero) {
+    glColor3f(1.0f, 0.0f, 0.0f); // Установка красного цвета для прямоугольника коллизии
+    glDisable(GL_TEXTURE_2D); // Отключение текстурирования для рисования цветных форм
+
+    glBegin(GL_LINE_LOOP); // Начинаем рисовать линии
+        glVertex2f(hero->x, hero->y);
+        glVertex2f(hero->x + hero->width, hero->y);
+        glVertex2f(hero->x + hero->width, hero->y + hero->height);
+        glVertex2f(hero->x, hero->y + hero->height);
+    glEnd();
+
+    glEnable(GL_TEXTURE_2D); // Включение текстурирования обратно для остальной части сцены
+    glColor3f(1.0f, 1.0f, 1.0f); // Возвращение цвета к белому для последующей отрисовки текстур
+}
 
 // Функция рендеринга анимации
 void RenderSpriteAnimation(GLuint texture, float posX, float posY, float width, float height, float scale, int currentFrame) {
@@ -198,6 +212,7 @@ void RenderSpriteAnimation(GLuint texture, float posX, float posY, float width, 
     // Рассчитываем размеры спрайта с учетом масштаба
     float scaledWidth = width * scale;
     float scaledHeight = height * scale;
+    DrawCollisionBox(&hero);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -214,22 +229,8 @@ void RenderSpriteAnimation(GLuint texture, float posX, float posY, float width, 
 }
 
 
-bool CheckCollisionWithMap(float newX, float newY, Hero *hero, bool* isWallHit) {
-    *isWallHit = false; // Сбрасываем флаг столкновения со стеной
-    // Проверка на столкновение с тайлами карты
-    for (int y = (int)(newY / TILE_SIZE); y < (int)((newY + hero->height) / TILE_SIZE); y++) {
-        for (int x = (int)(newX / TILE_SIZE); x < (int)((newX + hero->width) / TILE_SIZE); x++) {
-            char tile = TileMap[y][x];
-            if (tile == 'X') {
-                *isWallHit = true; // Устанавливаем флаг столкновения со стеной, если касаемся тайла 'X'
-                return true; // Обнаружено столкновение
-            } else if (tile == 'B' || tile == 'H' || tile == 'G') {
-                return true; // Обнаружено столкновение с другими непроходимыми тайлами
-            }
-        }
-    }
-    return false; // Столкновений не обнаружено
-}
+
+
 bool isSolidTileAt(float x, float y) {
     // Преобразуем координаты в индексы массива TileMap
     int tileX = (int)(x / TILE_SIZE);
@@ -277,6 +278,29 @@ void UpdateGroundLevelForHero(Hero* hero) {
         groundLevel = FLT_MAX; // Означает отсутствие земли под героем
     }
 }
+bool CheckCollisionWithMap(float newX, float newY, Hero *hero, bool* isWallHitX, bool* isWallHitY) {
+    *isWallHitX = false;
+    *isWallHitY = false;
+    bool collision = false;
+
+    int leftTile = floor(newX / TILE_SIZE);
+    int rightTile = ceil((newX + hero->width) / TILE_SIZE) - 1;
+    int topTile = floor(newY / TILE_SIZE);
+    int bottomTile = ceil((newY + hero->height) / TILE_SIZE) - 1;
+
+    for (int y = topTile; y <= bottomTile; y++) {
+        for (int x = leftTile; x <= rightTile; x++) {
+            if (x < 0 || x >= W || y < 0 || y >= H) continue;
+            char tile = TileMap[y][x];
+            if (tile == 'X' || tile == 'B' || tile == 'H' || tile == 'G') {
+                collision = true;
+                if (x == leftTile || x == rightTile) *isWallHitX = true;
+                if (y == topTile || y == bottomTile) *isWallHitY = true;
+            }
+        }
+    }
+    return collision;
+}
 void UpdateHeroPositionAndCollisions(Hero *hero, float deltaTime) {
     // Обновляем уровень земли для героя
     UpdateGroundLevelForHero(hero);
@@ -285,36 +309,44 @@ void UpdateHeroPositionAndCollisions(Hero *hero, float deltaTime) {
     float potentialNewX = hero->x + hero->dx * deltaTime;
     float potentialNewY = hero->y + hero->dy * deltaTime;
     bool isWallHit = false; // Флаг столкновения со стеной
+    bool isWallHitX = false, isWallHitY = false;
+    bool isUnderPlatform = false;
 
-    // Проверка на столкновение и обновление позиции по X
-    if (!CheckCollisionWithMap(potentialNewX, hero->y, hero, &isWallHit)) {
+
+    // Check for X-axis collisions
+    if (!CheckCollisionWithMap(potentialNewX, hero->y, hero, &isWallHitX, &isWallHitY)) {
         hero->x = potentialNewX;
-    } else {
-        if (isWallHit) { // Если столкновение со стеной
-            hero->dx = 0; // Останавливаем движение
+    } else if (isWallHitX) {
+        if (hero->dx > 0) { // Moving right
+            hero->x = floor((hero->x + hero->width) / TILE_SIZE) * TILE_SIZE - hero->width;
+        } else if (hero->dx < 0) { // Moving left
+            hero->x = ceil(hero->x / TILE_SIZE) * TILE_SIZE;
         }
+        hero->dx = 0; // Stop horizontal movement
     }
+
 
     // Применение гравитации
     hero->dy -= gravity * deltaTime;
 
-    // Гравитация и обновление позиции по Y
-    if (!CheckCollisionWithMap(hero->x, potentialNewY, hero, &isWallHit)) {
+    // Check for Y-axis collisions
+    if (!CheckCollisionWithMap(hero->x, potentialNewY, hero, &isWallHitX, &isWallHitY) || !isWallHitY) {
         hero->y = potentialNewY;
-        hero->isAirborne = true; // Герой в воздухе
+        hero->isAirborne = true; // Hero is in the air
     } else {
-        if (isWallHit) {
-            hero->dy = 0; // Останавливаем падение при столкновении со стеной
-            hero->x += 5;
-        } else {
-            hero->y = groundLevel; // Коррекция позиции на уровень земли
-            hero->isAirborne = false; // Герой на земле
+        if (hero->dy < 0) { // Moving downwards
+            hero->y = groundLevel;
+        }  if (hero->dy > 0) { // Moving upwards
+            hero->y = groundLevel;
         }
-        if (hero->y < TILE_SIZE) {
-        hero->y = TILE_SIZE;
-        hero->dy = 0; // Останавливаем вертикальное движение
+        hero->dy = 0;
+        hero->isAirborne = false; // Hero is on the ground or a platform
     }
-    }
+
+
+
+
+
 
 
     // Ограничение вертикальной скорости
