@@ -56,8 +56,8 @@ char TileMap[H][W] = {
     "X                                              X",
     "X                                              X",
     "X    HHHHHHHHHHHH                              X",
+    "X                         HHHHHHHHH            X",
     "X                                              X",
-    "X                        HHHHHHHHH             X",
     "X                                              X",
     "X                                              X",
     "X                                              X",
@@ -278,75 +278,94 @@ void UpdateGroundLevelForHero(Hero* hero) {
         groundLevel = FLT_MAX; // Означает отсутствие земли под героем
     }
 }
-bool CheckCollisionWithMap(float newX, float newY, Hero *hero, bool* isWallHitX, bool* isWallHitY) {
+bool CheckHorizontalCollision(float newX, Hero *hero, bool* isWallHitX) {
     *isWallHitX = false;
-    *isWallHitY = false;
     bool collision = false;
 
     int leftTile = floor(newX / TILE_SIZE);
     int rightTile = ceil((newX + hero->width) / TILE_SIZE) - 1;
-    int topTile = floor(newY / TILE_SIZE);
-    int bottomTile = ceil((newY + hero->height) / TILE_SIZE) - 1;
 
-    for (int y = topTile; y <= bottomTile; y++) {
+    for (int y = floor(hero->y / TILE_SIZE); y <= ceil((hero->y + hero->height) / TILE_SIZE) - 1; y++) {
         for (int x = leftTile; x <= rightTile; x++) {
             if (x < 0 || x >= W || y < 0 || y >= H) continue;
             char tile = TileMap[y][x];
             if (tile == 'X' || tile == 'B' || tile == 'H' || tile == 'G') {
                 collision = true;
-                if (x == leftTile || x == rightTile) *isWallHitX = true;
-                if (y == topTile || y == bottomTile) *isWallHitY = true;
+                if (x == leftTile || x == rightTile) {
+                    *isWallHitX = true;
+                    break;
+                }
             }
         }
+        if (*isWallHitX) break; // Досрочный выход из цикла при обнаружении столкновения
     }
     return collision;
 }
+bool CheckVerticalCollision(float newY, Hero *hero, bool* isWallHitY) {
+    *isWallHitY = false;
+    bool collision = false;
+
+    int topTile = floor(newY / TILE_SIZE);
+    int bottomTile = ceil((newY + hero->height) / TILE_SIZE) - 1;
+
+    for (int x = floor(hero->x / TILE_SIZE); x <= ceil((hero->x + hero->width) / TILE_SIZE) - 1; x++) {
+        for (int y = topTile; y <= bottomTile; y++) {
+            if (x < 0 || x >= W || y < 0 || y >= H) continue;
+            char tile = TileMap[y][x];
+            if (tile == 'X' || tile == 'B' || tile == 'H' || tile == 'G') {
+                collision = true;
+                if (y == topTile || y == bottomTile) {
+                    *isWallHitY = true;
+                    break;
+                }
+            }
+        }
+        if (*isWallHitY) break; // Досрочный выход из цикла при обнаружении столкновения
+    }
+    return collision;
+}
+
+
 void UpdateHeroPositionAndCollisions(Hero *hero, float deltaTime) {
     // Обновляем уровень земли для героя
     UpdateGroundLevelForHero(hero);
 
-    // Предполагаемая новая позиция героя
+    // Предполагаемая новая позиция героя по оси X
     float potentialNewX = hero->x + hero->dx * deltaTime;
-    float potentialNewY = hero->y + hero->dy * deltaTime;
-    bool isWallHit = false; // Флаг столкновения со стеной
-    bool isWallHitX = false, isWallHitY = false;
-    bool isUnderPlatform = false;
+    bool isWallHitX = false;
 
-
-    // Check for X-axis collisions
-    if (!CheckCollisionWithMap(potentialNewX, hero->y, hero, &isWallHitX, &isWallHitY)) {
+    // Проверка столкновения по оси X
+    if (!CheckHorizontalCollision(potentialNewX, hero, &isWallHitX)) {
         hero->x = potentialNewX;
-    } else if (isWallHitX) {
-        if (hero->dx > 0) { // Moving right
-            hero->x = floor((hero->x + hero->width) / TILE_SIZE) * TILE_SIZE - hero->width;
-        } else if (hero->dx < 0) { // Moving left
-            hero->x = ceil(hero->x / TILE_SIZE) * TILE_SIZE;
+    } else {
+        // При столкновении справа или слева корректируем позицию
+        if (hero->dx > 0) { // Движение вправо
+            hero->x = floor((potentialNewX + hero->width) / TILE_SIZE) * TILE_SIZE - hero->width - 0.01; // Немного отодвигаем от тайла
+        } else if (hero->dx < 0) { // Движение влево
+            hero->x = ceil(potentialNewX / TILE_SIZE) * TILE_SIZE + 0.01; // Немного отодвигаем от тайла
         }
-        hero->dx = 0; // Stop horizontal movement
+        hero->dx = 0; // Останавливаем движение по X
     }
 
-
-    // Применение гравитации
+    // Применение гравитации и обновление по Y
     hero->dy -= gravity * deltaTime;
+    float potentialNewY = hero->y + hero->dy * deltaTime;
+    bool isWallHitY = false;
 
-    // Check for Y-axis collisions
-    if (!CheckCollisionWithMap(hero->x, potentialNewY, hero, &isWallHitX, &isWallHitY) || !isWallHitY) {
+    // Проверка столкновения по оси Y
+    if (!CheckVerticalCollision(potentialNewY, hero, &isWallHitY)) {
         hero->y = potentialNewY;
-        hero->isAirborne = true; // Hero is in the air
+        hero->isAirborne = true; // Герой находится в воздухе
     } else {
-        if (hero->dy < 0) { // Moving downwards
-            hero->y = groundLevel;
-        }  if (hero->dy > 0) { // Moving upwards
-            hero->y = groundLevel;
+        // При столкновении сверху или снизу
+        if (hero->dy > 0) { // Если движение вверх
+            hero->y = ceil((hero->y + hero->height) / TILE_SIZE) * TILE_SIZE - hero->height - 0.01;
+        } else { // Если движение вниз
+            hero->y = floor(potentialNewY / TILE_SIZE) * TILE_SIZE;
+            hero->isAirborne = false; // Герой стоит на земле
         }
         hero->dy = 0;
-        hero->isAirborne = false; // Hero is on the ground or a platform
     }
-
-
-
-
-
 
 
     // Ограничение вертикальной скорости
@@ -355,16 +374,10 @@ void UpdateHeroPositionAndCollisions(Hero *hero, float deltaTime) {
     } else if (hero->dy < -maxYVelocity) {
         hero->dy = -maxYVelocity;
     }
-
-    // Проверка нахождения героя на земле
-    if (hero->y >= groundLevel && !isWallHit) {
-        hero->isAirborne = false;
-        hero->dy = 0; // Прекращаем вертикальное движение
-    }else{
-        hero->isAirborne = true;
-    }
-
 }
+
+
+
 void Init(HWND hwnd)
 {
     Menu_AddButton("sprite_1",10,10,100,30,2);

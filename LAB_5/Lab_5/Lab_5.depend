@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1714025363 source:c:\users\zhilk\desktop\computer-graphics\lab_5\lab_5\main.c
+1714025474 source:c:\users\zhilk\desktop\computer-graphics\lab_5\lab_5\main.c
 	<windows.h>
 	<gl/gl.h>
 	<math.h>

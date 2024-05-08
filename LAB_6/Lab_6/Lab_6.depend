@@ -1,0 +1,27 @@
+# depslib dependency file v1.0
+1715192430 source:c:\users\zhilk\desktop\computer-graphics\lab_5\lab_5\main.c
+	<windows.h>
+	<gl/gl.h>
+	<math.h>
+
+1674624946 c:\users\zhilk\desktop\computer-graphics\lab_5\lab_5\camera.h
+
+1674626872 source:c:\users\zhilk\desktop\computer-graphics\lab_5\lab_5\camera.cpp
+	<windows.h>
+	<gl/gl.h>
+	"camera.h"
+	<math.h>
+
+1674626872 source:c:\users\zhilk\desktop\computer-graphics\lab_6\lab_5\camera.cpp
+	<windows.h>
+	<gl/gl.h>
+	"camera.h"
+	<math.h>
+
+1674624946 c:\users\zhilk\desktop\computer-graphics\lab_6\lab_5\camera.h
+
+1715193322 source:c:\users\zhilk\desktop\computer-graphics\lab_6\lab_5\main.c
+	<windows.h>
+	<gl/gl.h>
+	<math.h>
+

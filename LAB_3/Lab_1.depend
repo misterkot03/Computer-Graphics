@@ -105,14 +105,55 @@
 	<stdlib.h>
 	<math.h>
 
-1711783968 source:c:\users\zhilk\desktop\computer-graphics\lab_3\c\graphics.c
-	"../headers/graphics.h"
+1711784522 source:c:\users\zhilk\desktop\computer-graphics\lab_3\c\graphics.c
 	"../headers/graphics.h"
 
-1711783930 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\graphics.h
+1711784126 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\graphics.h
 	<gl/gl.h>
-	"tile.h"
+	"../headers/tile.h"
 
-1711782882 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\tile.h
+1711784520 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\tile.h
+	<gl/gl.h>
+
+1711784976 source:c:\users\zhilk\desktop\computer-graphics\lab_3\c\hero.c
+	"../headers/hero.h"
+	"../headers/level.h"
+
+1711785646 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\hero.h
 	"graphics.h"
+
+1711785032 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\level.h
+	"../headers/tile.h"
+
+1711784647 source:c:\users\zhilk\desktop\computer-graphics\lab_3\c\level.c
+	"../headers/Level.h"
+
+1711785761 source:c:\users\zhilk\desktop\computer-graphics\lab_3\c\main.c
+	<windows.h>
+	<gl/gl.h>
+	"../headers/Menu.h"
+	"../headers/graphics.h"
+	"../headers/level.h"
+	"../headers/tile.h"
+	"../headers/hero.h"
+	"../headers/stb_image.h"
+
+1711121174 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\menu.h
+
+1711121174 c:\users\zhilk\desktop\computer-graphics\lab_3\headers\stb_image.h
+	"stb_image.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdlib.h>
+	<string.h>
+	<limits.h>
+	<math.h>
+	<stdio.h>
+	<assert.h>
+	<stdint.h>
+	<emmintrin.h>
+	<intrin.h>
+	<arm_neon.h>
 
