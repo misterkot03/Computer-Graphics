@@ -249,35 +249,35 @@ bool isSolidTileAt(float x, float y) {
 }
 
 void UpdateGroundLevelForHero(Hero* hero) {
-    float nearestGround = FLT_MAX;
-    bool groundFound = false;
+float nearestGround = FLT_MAX;
+bool groundFound = false;
 
-    // Начинаем проверку с позиции героя по X и проверяем только тайлы прямо под ним
-    int tileXStart = (int)(hero->x / TILE_SIZE);
-    int tileXEnd = (int)((hero->x + hero->width) / TILE_SIZE);
+// Позиция ног персонажа
+float feetY = hero->y + hero->height;
 
-    // Ищем ближайший непроходимый тайл под героем
-    for (int x = tileXStart; x <= tileXEnd; x++) {
-        for (int y = (int)(hero->y / TILE_SIZE) + 1; y < H; y++) {
-            if (isSolidTileAt(x * TILE_SIZE, y * TILE_SIZE)) {
-                float groundY = y * TILE_SIZE - hero->height;
-                if (groundY < nearestGround) {
-                    nearestGround = groundY;
-                    groundFound = true;
-                }
-                break; // Переходим к следующему столбцу, как только найдем землю
-            }
-        }
-    }
+int tileXStart = (int)(hero->x / TILE_SIZE);
+int tileXEnd = (int)((hero->x + hero->width) / TILE_SIZE);
 
-    if (groundFound) {
-        groundLevel = nearestGround;
-    } else {
-        // Если под героем нет земли, мы можем установить groundLevel
-        // в значение, которое обозначает "падение" или вернуть его на дефолтный уровень
-        groundLevel = FLT_MAX; // Означает отсутствие земли под героем
-    }
+for (int x = tileXStart; x <= tileXEnd; x++) {
+for (int y = (int)(feetY / TILE_SIZE); y < H; y++) {
+if (isSolidTileAt(x * TILE_SIZE, y * TILE_SIZE)) {
+float groundY = y * TILE_SIZE - hero->height;
+if (groundY < nearestGround) {
+nearestGround = groundY;
+groundFound = true;
 }
+break;
+}
+}
+}
+
+if (groundFound) {
+groundLevel = nearestGround;
+} else {
+groundLevel = FLT_MAX; // Нет земли под персонажем
+}
+}
+
 bool CheckHorizontalCollision(float newX, Hero *hero, bool* isWallHitX) {
     *isWallHitX = false;
     bool collision = false;
@@ -361,7 +361,7 @@ void UpdateHeroPositionAndCollisions(Hero *hero, float deltaTime) {
         if (hero->dy > 0) { // Если движение вверх
             hero->y = ceil((hero->y + hero->height) / TILE_SIZE) * TILE_SIZE - hero->height - 0.01;
         } else { // Если движение вниз
-            hero->y = floor(potentialNewY / TILE_SIZE) * TILE_SIZE;
+            hero->y = floor(potentialNewY / TILE_SIZE) * TILE_SIZE + TILE_SIZE;
             hero->isAirborne = false; // Герой стоит на земле
         }
         hero->dy = 0;
